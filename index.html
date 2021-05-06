@@ -1,0 +1,83 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<script type="module">
+import { Pbf } from "https://taisukef.github.io/pbf/Pbf.js";
+import { fetchBin } from "https://code4sabae.github.io/js/fetchBin.js";
+import { VectorTile } from "https://taisukef.github.io/vector-tile-js/VectorTile.js";
+import { loadGeometry } from "https://taisukef.github.io/vector-tile-js/loadGeometry.js";
+
+import * as THREE from "https://unpkg.com/three@0.128.0/build/three.module.js";
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+
+const addPbfToScene = async (scene, url, color) => {
+  const data = await fetchBin(url);
+  const tile = new VectorTile(new Pbf(data));
+
+  for (const name in tile.layers) {
+    const layer = tile.layers[name];
+    for (let j = 0; j < layer.length; j++) {
+      const feature = layer.feature(j);
+      const geo = loadGeometry(feature);
+
+      // make
+      for (const g of geo) {
+        const vertices = [];
+        for (const p of g) {
+          vertices.push(new THREE.Vector3(p.x / 5, 0, p.y / 5));
+        }
+        const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+        const material = new THREE.PointsMaterial({
+          size: 2,
+          color,
+        });
+        const mesh = new THREE.Line(geometry, material);
+        //const mesh = new THREE.Points(geometry, material);
+        scene.add(mesh);
+      }
+    }
+  }
+};
+
+window.onload = async () => {
+  document.body.style.margin = "0";
+  document.body.style.overflow = "hidden";
+  const canvas = document.createElement("canvas");
+  document.body.appendChild(canvas);
+
+  const renderer = new THREE.WebGLRenderer({ canvas });
+  const scene = new THREE.Scene();
+
+  const camera = new THREE.PerspectiveCamera(45);
+  camera.far = 10000;
+
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/7/112/50.pbf", 0xffffff);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/9/450/202.pbf", 0x8888ff);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/13/7190/3216.pbf", 0xff8800);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/13/7190/3217.pbf", 0x88ff88);
+
+  // const controls = new OrbitControls(camera, renderer.domElement);
+  
+  let th = 0;
+  const tick = () => {
+    th += .02;
+    camera.position.x = 1000 * Math.sin(th);
+    camera.position.z = 1000 * Math.cos(th);
+    camera.position.y = 1000;
+    camera.lookAt(new THREE.Vector3(500, 0, 500));
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  };
+  tick();
+  
+  window.onresize = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  };
+  window.onresize();
+};
+</script>
+</head>
+</html>
