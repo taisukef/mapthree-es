@@ -7,8 +7,7 @@ import { VectorTile } from "https://taisukef.github.io/vector-tile-js/VectorTile
 import * as THREE from "https://unpkg.com/three@0.128.0/build/three.module.js";
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 
-const addPbfToScene = async (scene, baseurl, z, x, y, color) => {
-  const url = baseurl + z + "/" + x + "/" + y + ".pbf";
+const addPbfToScene = async (scene, url, color) => {
   const data = await fetchBin(url);
   const tile = new VectorTile(new Pbf(data));
 
@@ -16,17 +15,13 @@ const addPbfToScene = async (scene, baseurl, z, x, y, color) => {
     const layer = tile.layers[name];
     for (let j = 0; j < layer.length; j++) {
       const feature = layer.feature(j);
-      const geojson = feature.toGeoJSON(x, y, z);
-      const geo = geojson.geometry.coordinates;
-      console.log(geojson);
+      const geo = feature.loadGeometry();
 
-      const putMesh = (poss) => {
+      // make
+      for (const g of geo) {
         const vertices = [];
-        for (const p of poss) {
-          const px = (p[0] - 135) * 1000;
-          const py = (p[1] - 35) * 1000;
-          console.log(px, py);
-          vertices.push(new THREE.Vector3(px, 0, py));
+        for (const p of g) {
+          vertices.push(new THREE.Vector3(p.x / 5, 0, p.y / 5));
         }
         const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
         const material = new THREE.PointsMaterial({
@@ -36,17 +31,6 @@ const addPbfToScene = async (scene, baseurl, z, x, y, color) => {
         const mesh = new THREE.Line(geometry, material);
         //const mesh = new THREE.Points(geometry, material);
         scene.add(mesh);
-      };
-      const type = geojson.geometry.type;
-      console.log(type)
-      if (type == "MultiPolygon") {
-        for (const g of geo) {
-          for (const g2 of g) {
-            putMesh(g2);
-          }
-        }
-      } else if (type == "LineString") {
-        putMesh(geo);
       }
     }
   }
@@ -64,11 +48,10 @@ window.onload = async () => {
   const camera = new THREE.PerspectiveCamera(45);
   camera.far = 10000;
 
-  const baseurl = "https://taisukef.github.io/sh2/zxy/";
-  addPbfToScene(scene, baseurl, 7, 112, 50, 0xffffff);
-  addPbfToScene(scene, baseurl, 9, 450, 220, 0x8888ff);
-  addPbfToScene(scene, baseurl, 13, 7190, 3216, 0xff8800);
-  addPbfToScene(scene, baseurl, 13, 7190, 3217, 0x88ff88);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/7/112/50.pbf", 0xffffff);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/9/450/202.pbf", 0x8888ff);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/13/7190/3216.pbf", 0xff8800);
+  addPbfToScene(scene, "https://taisukef.github.io/sh2/zxy/13/7190/3217.pbf", 0x88ff88);
 
   // const controls = new OrbitControls(camera, renderer.domElement);
   
