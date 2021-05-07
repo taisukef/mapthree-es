@@ -3,7 +3,6 @@
 import { Pbf } from "https://taisukef.github.io/pbf/Pbf.js";
 import { fetchBin } from "https://code4sabae.github.io/js/fetchBin.js";
 import { VectorTile } from "https://taisukef.github.io/vector-tile-js/VectorTile.js";
-import { loadGeometry } from "https://taisukef.github.io/vector-tile-js/loadGeometry.js";
 
 import * as THREE from "https://unpkg.com/three@0.128.0/build/three.module.js";
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
@@ -16,7 +15,7 @@ const addPbfToScene = async (scene, url, color) => {
     const layer = tile.layers[name];
     for (let j = 0; j < layer.length; j++) {
       const feature = layer.feature(j);
-      const geo = loadGeometry(feature);
+      const geo = feature.loadGeometry();
 
       // make
       for (const g of geo) {
