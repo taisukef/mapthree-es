@@ -52,7 +52,7 @@ const addPbfToScene = async (scene, baseurl, z, x, y, color) => {
   }
 };
 
-window.onload = async () => {
+onload = async () => {
   document.body.style.margin = "0";
   document.body.style.overflow = "hidden";
   const canvas = document.createElement("canvas");
@@ -84,15 +84,15 @@ window.onload = async () => {
   };
   tick();
   
-  window.onresize = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    renderer.setPixelRatio(window.devicePixelRatio);
+  onresize = () => {
+    const width = innerWidth;
+    const height = innerHeight;
+    renderer.setPixelRatio(devicePixelRatio);
     renderer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   };
-  window.onresize();
+  onresize();
 };
 </script>
 </head>
